@@ -1,46 +1,53 @@
-﻿// Mengimpor namespace yang diperlukan.
-using API.Contracts;
+﻿using API.Contracts;
 using API.DTOs.Roles;
 using API.Models;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 
-// Mendefinisikan controller dengan atribut ApiController dan route "/api/[controller]".
 namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class RoleController : ControllerBase
     {
-        // Mendeklarasikan readonly field _roleRepository sebagai implementasi IRoleRepository.
         private readonly IRoleRepository _roleRepository;
 
-        // Konstruktor controller yang menerima IRoleRepository sebagai parameter.
         public RoleController(IRoleRepository roleRepository)
         {
             _roleRepository = roleRepository;
         }
 
-        // HTTP GET endpoint untuk mengambil semua data Role.
+        // GET api/role
         [HttpGet]
         public IActionResult GetAll()
         {
-            // Memanggil metode GetAll dari _roleRepository.
+            // Memanggil metode GetAll dari _roleRepository untuk mendapatkan semua data Role.
             var result = _roleRepository.GetAll();
 
             // Memeriksa apakah hasil query tidak mengandung data.
             if (!result.Any())
             {
-                return NotFound("Data Not Found");
+                // Mengembalikan respons Not Found jika tidak ada data Role.
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data Role Tidak Ditemukan"
+                });
             }
 
             // Mengonversi hasil query ke objek DTO (Data Transfer Object) menggunakan Select.
             var data = result.Select(x => (RoleDto)x);
 
             // Mengembalikan data yang ditemukan dalam respons OK.
-            return Ok(data);
+            return Ok(new ResponseOKHandler<IEnumerable<RoleDto>>(data));
         }
 
-        // HTTP GET endpoint untuk mengambil data Role berdasarkan GUID.
+        // GET api/role/{guid}
         [HttpGet("{guid}")]
         public IActionResult GetByGuid(Guid guid)
         {
@@ -50,82 +57,148 @@ namespace API.Controllers
             // Memeriksa apakah hasil query tidak ditemukan (null).
             if (result is null)
             {
-                return NotFound("Id Not Found");
+                // Mengembalikan respons Not Found jika data Role dengan GUID tertentu tidak ditemukan.
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data Role dengan GUID Tertentu Tidak Ditemukan"
+                });
             }
 
             // Mengonversi hasil query ke objek DTO (Data Transfer Object).
-            return Ok((RoleDto)result);
+            return Ok(new ResponseOKHandler<RoleDto>((RoleDto)result));
         }
 
-        // HTTP POST endpoint untuk membuat data Role baru.
+        // POST api/role
         [HttpPost]
         public IActionResult Create(CreateRoleDto roleDto)
         {
-            // Memanggil metode Create dari _roleRepository dengan parameter DTO.
-            var result = _roleRepository.Create(roleDto);
-
-            // Memeriksa apakah penciptaan data berhasil atau gagal.
-            if (result is null)
+            try
             {
-                return BadRequest("Failed to create data");
-            }
+                // Mengonversi DTO CreateRoleDto menjadi objek Role.
+                Role toCreate = roleDto;
 
-            // Mengembalikan data yang berhasil dibuat dalam respons OK.
-            return Ok((RoleDto)result);
+                // Memanggil metode Create dari _roleRepository untuk membuat data Role baru.
+                var result = _roleRepository.Create(toCreate);
+
+                // Memeriksa apakah penciptaan data berhasil atau gagal.
+                if (result is null)
+                {
+                    // Mengembalikan respons BadRequest jika gagal membuat data Role.
+                    return BadRequest("Gagal membuat data");
+                }
+
+                // Mengembalikan data yang berhasil dibuat dalam respons OK.
+                return Ok(new ResponseOKHandler<RoleDto>((RoleDto)result));
+            }
+            catch (ExceptionHandler ex)
+            {
+                // Mengembalikan respons server error jika terjadi kesalahan dalam proses.
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Gagal membuat data",
+                    Error = ex.Message
+                });
+            }
         }
 
-        // HTTP PUT endpoint untuk memperbarui data Role.
+        // PUT api/role
         [HttpPut]
         public IActionResult Update(RoleDto roleDto)
         {
-            // Memeriksa apakah entitas Role yang akan diperbarui ada dalam database.
-            var entity = _roleRepository.GetByGuid(roleDto.Guid);
-            if (entity is null)
+            try
             {
-                return NotFound("Id Not Found");
+                // Memeriksa apakah entitas Role yang akan diperbarui ada dalam database.
+                var entity = _roleRepository.GetByGuid(roleDto.Guid);
+                if (entity is null)
+                {
+                    // Mengembalikan respons Not Found jika Role dengan GUID tertentu tidak ditemukan.
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Role dengan GUID Tertentu Tidak Ditemukan"
+                    });
+                }
+
+                // Menyalin nilai CreatedDate dari entitas yang ada ke entitas yang akan diperbarui.
+                Role toUpdate = roleDto;
+                toUpdate.CreatedDate = entity.CreatedDate;
+
+                // Memanggil metode Update dari _roleRepository untuk memperbarui data Role.
+                var result = _roleRepository.Update(toUpdate);
+
+                // Memeriksa apakah pembaruan data berhasil atau gagal.
+                if (!result)
+                {
+                    // Mengembalikan respons BadRequest jika gagal memperbarui data Role.
+                    return BadRequest("Gagal memperbarui data");
+                }
+
+                // Mengembalikan pesan sukses dalam respons OK.
+                return Ok("Data Telah Diperbarui");
             }
-
-            // Menyalin nilai CreatedDate dari entitas yang ada ke entitas yang akan diperbarui.
-            Role toUpdate = roleDto;
-            toUpdate.CreatedDate = entity.CreatedDate;
-
-            // Memanggil metode Update dari _roleRepository.
-            var result = _roleRepository.Update(toUpdate);
-
-            // Memeriksa apakah pembaruan data berhasil atau gagal.
-            if (!result)
+            catch (ExceptionHandler ex)
             {
-                return BadRequest("Failed to update data");
+                // Mengembalikan respons server error jika terjadi kesalahan dalam proses.
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Gagal memperbarui data",
+                    Error = ex.Message
+                });
             }
-
-            // Mengembalikan pesan sukses dalam respons OK.
-            return Ok("Data Updated");
         }
 
-        // HTTP DELETE endpoint untuk menghapus data Role berdasarkan GUID.
+        // DELETE api/role/{guid}
         [HttpDelete("{guid}")]
         public IActionResult Delete(Guid guid)
         {
-            // Memanggil metode GetByGuid dari _roleRepository untuk mendapatkan entitas yang akan dihapus.
-            var existingRole = _roleRepository.GetByGuid(guid);
-
-            // Memeriksa apakah entitas yang akan dihapus ada dalam database.
-            if (existingRole is null)
+            try
             {
-                return NotFound("Role not found");
+                // Memanggil metode GetByGuid dari _roleRepository untuk mendapatkan entitas yang akan dihapus.
+                var existingRole = _roleRepository.GetByGuid(guid);
+
+                // Memeriksa apakah entitas yang akan dihapus ada dalam database.
+                if (existingRole is null)
+                {
+                    // Mengembalikan respons Not Found jika Role tidak ditemukan.
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Role Tidak Ditemukan"
+                    });
+                }
+
+                // Memanggil metode Delete dari _roleRepository untuk menghapus data Role.
+                var deleted = _roleRepository.Delete(existingRole);
+
+                // Memeriksa apakah penghapusan data berhasil atau gagal.
+                if (!deleted)
+                {
+                    // Mengembalikan respons BadRequest jika gagal menghapus Role.
+                    return BadRequest("Gagal menghapus role");
+                }
+
+                // Mengembalikan kode status 204 (No Content) untuk sukses penghapusan tanpa respons.
+                return NoContent();
             }
-
-            // Memanggil metode Delete dari _roleRepository.
-            var deleted = _roleRepository.Delete(existingRole);
-
-            // Memeriksa apakah penghapusan data berhasil atau gagal.
-            if (!deleted)
+            catch (ExceptionHandler ex)
             {
-                return BadRequest("Failed to delete role");
+                // Mengembalikan respons server error jika terjadi kesalahan dalam proses.
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Gagal menghapus role",
+                    Error = ex.Message
+                });
             }
-
-            // Mengembalikan kode status 204 (No Content) untuk sukses penghapusan tanpa respons.
-            return NoContent();
         }
     }
 }
