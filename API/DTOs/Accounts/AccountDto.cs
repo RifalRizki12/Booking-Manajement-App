@@ -7,7 +7,8 @@ public class AccountDto
     public Guid Guid { get; set; } // GUID unik yang mengidentifikasi akun
     public string Password { get; set; } 
     public int Otp { get; set; } 
-    public bool IsUsed { get; set; } 
+    public bool IsUsed { get; set; }
+    public DateTime ExpiredTime { get; set; }
 
     // Operator eksplisit digunakan untuk mengonversi objek Account ke AccountDto
     public static explicit operator AccountDto(Account account)
@@ -18,6 +19,7 @@ public class AccountDto
             Password = account.Password, 
             Otp = account.Otp, 
             IsUsed = account.IsUsed, 
+            ExpiredTime = account.ExpiredTime, 
         };
     }
 
@@ -30,6 +32,7 @@ public class AccountDto
             Password = accountDto.Password, 
             Otp = accountDto.Otp,
             IsUsed = accountDto.IsUsed, 
+            ExpiredTime = accountDto.ExpiredTime, 
             ModifiedDate = DateTime.Now // Mengisi properti ModifiedDate dengan tanggal dan waktu saat ini.
         };
     }

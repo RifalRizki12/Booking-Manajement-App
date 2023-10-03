@@ -3,6 +3,7 @@ using API.Contracts;
 using API.DTOs.Accounts;
 using API.Models;
 using API.Repositories;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Mvc;
 
 // Mendefinisikan controller dengan atribut ApiController dan route "/api/[controller]".
@@ -62,7 +63,13 @@ namespace API.Controllers
         [HttpPost]
         public IActionResult Create(CreateAccountDto accountDto)
         {
-            // Memanggil metode Create dari _accountRepository dengan parameter DTO.
+            // Meng-hash kata sandi sebelum menyimpannya ke database.
+            string hashedPassword = HashHandler.HashPassword(accountDto.Password);
+
+            // Mengganti kata sandi asli dengan yang di-hash sebelum menyimpannya ke DTO.
+            accountDto.Password = hashedPassword;
+
+            // Memanggil metode Create dari _accountRepository dengan parameter DTO yang sudah di-hash.
             var result = _accountRepository.Create(accountDto);
 
             // Memeriksa apakah penciptaan data berhasil atau gagal.
@@ -86,12 +93,30 @@ namespace API.Controllers
                 return NotFound("Id Not Found");
             }
 
-            // Menyalin nilai CreatedDate dari entitas yang ada ke entitas yang akan diperbarui.
-            Account toUpdate = accountDto;
-            toUpdate.CreatedDate = entity.CreatedDate;
+            // Memeriksa apakah kata sandi berubah.
+            if (!string.IsNullOrEmpty(accountDto.Password))
+            {
+                // Meng-hash kata sandi baru sebelum menyimpannya ke database.
+                string hashedPassword = HashHandler.HashPassword(accountDto.Password);
+
+
+                // Menyalin nilai CreatedDate dari entitas yang ada ke entitas yang akan diperbarui.
+                Account toUpdate = accountDto;
+                toUpdate.CreatedDate = entity.CreatedDate;
+                // Mengganti kata sandi asli dengan yang di-hash pada objek entity.
+                entity.Password = hashedPassword;
+            }
+
+            // Memeriksa apakah kata sandi yang dimasukkan oleh pengguna cocok dengan kata sandi yang ada di database.
+            /*bool isPasswordValid = HashHandler.VerifyPassword(accountDto.Password, entity.Password);
+
+            if (!isPasswordValid)
+            {
+                return BadRequest("Password is not valid");
+            }*/
 
             // Memanggil metode Update dari _accountRepository.
-            var result = _accountRepository.Update(toUpdate);
+            var result = _accountRepository.Update(entity);
 
             // Memeriksa apakah pembaruan data berhasil atau gagal.
             if (!result)
@@ -102,6 +127,7 @@ namespace API.Controllers
             // Mengembalikan pesan sukses dalam respons OK.
             return Ok("Data Updated");
         }
+
 
         // HTTP DELETE endpoint untuk menghapus data Account berdasarkan GUID.
         [HttpDelete("{guid}")]
