@@ -4,7 +4,6 @@ namespace API.DTOs.Employees
 {
     public class CreateEmployeeDto
     {
-        public string Nik { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime BirthDate { get; set; }
@@ -23,7 +22,6 @@ namespace API.DTOs.Employees
             {
                 // Properti seperti Nik dari objek Employee diisi dengan nilai dari beberapa properti
                 // dari objek CreateEmployeeDto (dto.Nik).
-                Nik = dto.Nik,
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 BirthDate = dto.BirthDate,

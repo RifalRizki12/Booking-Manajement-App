@@ -1,6 +1,7 @@
 ﻿using API.Contracts;
 using API.DTOs.Employees;
 using API.Models;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -55,8 +56,14 @@ namespace API.Controllers
         [HttpPost]
         public IActionResult Create(CreateEmployeeDto employeeDto)
         {
-            // Membuat karyawan baru berdasarkan data yang diberikan.
-            var result = _employeeRepository.Create(employeeDto);
+
+            // Mengonversi CreateEmployeeDto menjadi Employee secara implisit.
+            Employee toCreate = employeeDto;
+            // Mengatur NIK dengan nilai yang dihasilkan.
+            toCreate.Nik = GenerateHandler.generateNik(_employeeRepository.GetLastNik());
+
+            // Memanggil metode Create dari _employeeRepository dengan objek Employee baru.
+            var result = _employeeRepository.Create(toCreate);
 
             // Jika pembuatan karyawan gagal, kembalikan respons BadRequest.
             if (result is null)

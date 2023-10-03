@@ -54,7 +54,7 @@ namespace API.Controllers
         [HttpPost]
         public IActionResult Create(CreateUniversityDto universityDto)
         {
-            // Membuat universitas baru dengan menggunakan DTO yang diterima.
+            // Memanggil metode Create dari _universityRepository dengan objek University baru.
             var result = _universityRepository.Create(universityDto);
 
             // Jika gagal membuat universitas, kembalikan respons "Failed to create data".

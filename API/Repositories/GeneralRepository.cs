@@ -6,7 +6,7 @@ namespace API.Repositories
 {
     public class GeneralRepository<TEntity> : IGeneralRepository<TEntity> where TEntity : class
     {
-        private readonly BookingManagementDbContext _context;  // Mendefinisikan instance dari DbContext untuk mengakses database.
+        protected readonly BookingManagementDbContext _context;  // Mendefinisikan instance dari DbContext untuk mengakses database.
 
         public GeneralRepository(BookingManagementDbContext context)
         {
