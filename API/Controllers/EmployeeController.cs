@@ -3,6 +3,7 @@ using API.DTOs.Employees;
 using API.Models;
 using API.Utilities.Handler;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace API.Controllers
 {
@@ -21,114 +22,156 @@ namespace API.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            // Mengambil daftar semua karyawan dari repository.
             var result = _employeeRepository.GetAll();
 
-            // Jika tidak ada data karyawan, kembalikan respons Not Found.
+            // Periksa jika ada karyawan dalam hasil
             if (!result.Any())
             {
-                return NotFound("Data Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data Karyawan Tidak Ditemukan"
+                });
             }
 
-            // Mengkonversi daftar karyawan menjadi daftar EmployeeDto dan mengembalikan respons OK.
+            // Konversi hasil ke EmployeeDto dan kembalikan dengan respons 200 OK
             var data = result.Select(x => (EmployeeDto)x);
-            return Ok(result);
+            return Ok(new ResponseOKHandler<IEnumerable<EmployeeDto>>(data));
         }
 
         // GET api/employee/{guid}
         [HttpGet("{guid}")]
         public IActionResult GetByGuid(Guid guid)
         {
-            // Mengambil karyawan berdasarkan GUID yang diberikan dari repository.
             var result = _employeeRepository.GetByGuid(guid);
 
-            // Jika karyawan tidak ditemukan, kembalikan respons Not Found.
+            // Periksa jika karyawan dengan GUID tertentu ada
             if (result is null)
             {
-                return NotFound("Id Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Karyawan dengan GUID Tertentu Tidak Ditemukan"
+                });
             }
 
-            // Mengkonversi hasil ke EmployeeDto dan mengembalikan respons OK.
-            return Ok((EmployeeDto)result);
+            // Konversi hasil ke EmployeeDto dan kembalikan dengan respons 200 OK
+            return Ok(new ResponseOKHandler<EmployeeDto>((EmployeeDto)result));
         }
 
         // POST api/employee
         [HttpPost]
         public IActionResult Create(CreateEmployeeDto employeeDto)
         {
-
-            // Mengonversi CreateEmployeeDto menjadi Employee secara implisit.
-            Employee toCreate = employeeDto;
-            // Mengatur NIK dengan nilai yang dihasilkan.
-            toCreate.Nik = GenerateHandler.generateNik(_employeeRepository.GetLastNik());
-
-            // Memanggil metode Create dari _employeeRepository dengan objek Employee baru.
-            var result = _employeeRepository.Create(toCreate);
-
-            // Jika pembuatan karyawan gagal, kembalikan respons BadRequest.
-            if (result is null)
+            try
             {
-                return BadRequest("Failed to create data");
-            }
+                // Buat instance Employee baru dari DTO yang diberikan
+                Employee toCreate = employeeDto;
 
-            // Mengkonversi hasil ke EmployeeDto dan mengembalikan respons OK.
-            return Ok((EmployeeDto)result);
+                // Hasilkan NIK baru dan berikan ke karyawan
+                toCreate.Nik = GenerateHandler.generateNik(_employeeRepository.GetLastNik());
+
+                // Panggil repositori untuk membuat karyawan
+                var result = _employeeRepository.Create(toCreate);
+
+                // Kembalikan karyawan yang telah dibuat dengan respons 200 OK
+                return Ok(new ResponseOKHandler<EmployeeDto>((EmployeeDto)result));
+            }
+            catch (ExceptionHandler ex)
+            {
+                // Tangani pengecualian dan kembalikan respons 500 Internal Server Error
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Gagal membuat data karyawan",
+                    Error = ex.Message
+                });
+            }
         }
 
         // PUT api/employee
         [HttpPut]
         public IActionResult Update(EmployeeDto employeeDto)
         {
-            // Mengambil karyawan yang sudah ada berdasarkan GUID yang diberikan.
-            var existingEmployee = _employeeRepository.GetByGuid(employeeDto.Guid);
-
-            // Jika karyawan tidak ditemukan, kembalikan respons Not Found.
-            if (existingEmployee == null)
+            try
             {
-                return NotFound("Employee not found");
+                // Dapatkan entitas karyawan yang akan diperbarui berdasarkan GUID
+                var entity = _employeeRepository.GetByGuid(employeeDto.Guid);
+
+                // Periksa jika entitas ada
+                if (entity is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Karyawan dengan GUID Tertentu Tidak Ditemukan"
+                    });
+                }
+
+                // Ubah beberapa properti karyawan dan panggil repositori untuk memperbarui
+                Employee toUpdate = employeeDto;
+                toUpdate.Nik = entity.Nik;
+                toUpdate.CreatedDate = entity.CreatedDate;
+
+                _employeeRepository.Update(toUpdate);
+
+                // Kembalikan pesan sukses dengan respons 200 OK
+                return Ok(new ResponseOKHandler<string>("Data Karyawan Telah Diperbarui"));
             }
-
-            // Mengupdate properti karyawan yang ada dengan data dari EmployeeDto.
-            Employee toUpdate = employeeDto;
-            toUpdate.CreatedDate = existingEmployee.CreatedDate;
-
-            // Melakukan update data karyawan ke repository.
-            var result = _employeeRepository.Update(toUpdate);
-
-            // Jika update gagal, kembalikan respons BadRequest.
-            if (!result)
+            catch (ExceptionHandler ex)
             {
-                return BadRequest("Failed to update data");
+                // Tangani pengecualian dan kembalikan respons 500 Internal Server Error
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Gagal memperbarui data karyawan",
+                    Error = ex.Message
+                });
             }
-
-            // Kembalikan respons OK dengan pesan "Data Updated".
-            return Ok("Data Updated");
         }
 
         // DELETE api/employee/{guid}
         [HttpDelete("{guid}")]
         public IActionResult Delete(Guid guid)
         {
-            // Mengambil karyawan berdasarkan GUID yang diberikan.
-            var existingEmployee = _employeeRepository.GetByGuid(guid);
-
-            // Jika karyawan tidak ditemukan, kembalikan respons Not Found.
-            if (existingEmployee is null)
+            try
             {
-                return NotFound("Employee not found");
+                // Dapatkan entitas karyawan yang akan dihapus berdasarkan GUID
+                var entity = _employeeRepository.GetByGuid(guid);
+
+                // Periksa jika entitas ada
+                if (entity is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Karyawan dengan GUID Tertentu Tidak Ditemukan"
+                    });
+                }
+
+                // Hapus karyawan dari repositori
+                _employeeRepository.Delete(entity);
+
+                // Kembalikan pesan sukses dengan respons 200 OK
+                return Ok(new ResponseOKHandler<string>("Data Karyawan Telah Dihapus"));
             }
-
-            // Menghapus karyawan dari repository.
-            var deleted = _employeeRepository.Delete(existingEmployee);
-
-            // Jika penghapusan gagal, kembalikan respons BadRequest.
-            if (!deleted)
+            catch (ExceptionHandler ex)
             {
-                return BadRequest("Failed to delete employee");
+                // Tangani pengecualian dan kembalikan respons 500 Internal Server Error
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Gagal menghapus data karyawan",
+                    Error = ex.Message
+                });
             }
-
-            // Kembalikan respons NoContent (status 204) untuk sukses penghapusan tanpa respons.
-            return NoContent();
         }
     }
 }
