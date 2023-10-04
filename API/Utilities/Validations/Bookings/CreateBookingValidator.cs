@@ -3,29 +3,37 @@ using FluentValidation;
 
 namespace API.Utilities.Validations.Bookings
 {
+    // Mendefinisikan kelas CreateBookingValidator yang menggantungkan tipe CreateBookingDto
     public class CreateBookingValidator : AbstractValidator<CreateBookingDto>
     {
-        public CreateBookingValidator() 
+        // Konstruktor kelas CreateBookingValidator
+        public CreateBookingValidator()
         {
+            // Aturan validasi untuk properti 'StartDate' dalam objek CreateBookingDto
             RuleFor(b => b.StartDate)
-                .NotEmpty();
+                .NotEmpty();  // Properti tidak boleh kosong
 
+            // Aturan validasi untuk properti 'EndDate' dalam objek CreateBookingDto
             RuleFor(b => b.EndDate)
-                .NotEmpty();
+                .NotEmpty();  // Properti tidak boleh kosong
 
+            // Aturan validasi untuk properti 'Status' dalam objek CreateBookingDto
             RuleFor(b => b.Status)
-                .NotNull()
-                .IsInEnum();
+                .NotNull()     // Properti tidak boleh null
+                .IsInEnum();   // Properti harus merupakan nilai dari enum yang valid
 
+            // Aturan validasi untuk properti 'Remarks' dalam objek CreateBookingDto
             RuleFor(b => b.Remarks)
-                .NotNull();
+                .NotNull();    // Properti tidak boleh null
 
+            // Aturan validasi untuk properti 'RoomGuid' dalam objek CreateBookingDto
             RuleFor(b => b.RoomGuid)
-                .NotEmpty();
+                .NotEmpty();   // Properti tidak boleh kosong
 
+            // Aturan validasi untuk properti 'EmployeeGuid' dalam objek CreateBookingDto
             RuleFor(b => b.EmployeeGuid)
-                .NotEmpty();
-
+                .NotEmpty();   // Properti tidak boleh kosong
         }
     }
+
 }
