@@ -31,10 +31,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//Add FluentValidation Service
-builder.Services.AddFluentValidationAutoValidation()
-    .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
 builder.Services.AddControllers()
        .ConfigureApiBehaviorOptions(options =>
        {
@@ -48,6 +44,11 @@ builder.Services.AddControllers()
                return new BadRequestObjectResult(new ResponseValidatorHandler(errors));
            };
        });
+
+//Add FluentValidation Service
+builder.Services.AddFluentValidationAutoValidation()
+    .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
 
 var app = builder.Build();
 

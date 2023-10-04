@@ -55,7 +55,7 @@ namespace API.Migrations
 
                     b.HasKey("Guid");
 
-                    b.ToTable("tb_m_accounts");
+                    b.ToTable("tb_m_accounts", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.AccountRole", b =>
@@ -87,7 +87,7 @@ namespace API.Migrations
 
                     b.HasIndex("RoleGuid");
 
-                    b.ToTable("tb_m_account_roles");
+                    b.ToTable("tb_m_account_roles", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Booking", b =>
@@ -136,7 +136,7 @@ namespace API.Migrations
 
                     b.HasIndex("RoomGuid");
 
-                    b.ToTable("tb_tr_bookings");
+                    b.ToTable("tb_tr_bookings", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Education", b =>
@@ -175,7 +175,7 @@ namespace API.Migrations
 
                     b.HasIndex("UniversityGuid");
 
-                    b.ToTable("tb_m_educations");
+                    b.ToTable("tb_m_educations", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Employee", b =>
@@ -240,7 +240,7 @@ namespace API.Migrations
                     b.HasIndex("PhoneNumber")
                         .IsUnique();
 
-                    b.ToTable("tb_m_employees");
+                    b.ToTable("tb_m_employees", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Role", b =>
@@ -265,7 +265,7 @@ namespace API.Migrations
 
                     b.HasKey("Guid");
 
-                    b.ToTable("tb_m_roles");
+                    b.ToTable("tb_m_roles", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Room", b =>
@@ -298,7 +298,7 @@ namespace API.Migrations
 
                     b.HasKey("Guid");
 
-                    b.ToTable("tb_m_rooms");
+                    b.ToTable("tb_m_rooms", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.University", b =>
@@ -328,7 +328,7 @@ namespace API.Migrations
 
                     b.HasKey("Guid");
 
-                    b.ToTable("tb_m_universities");
+                    b.ToTable("tb_m_universities", (string)null);
                 });
 
             modelBuilder.Entity("API.Models.Account", b =>
