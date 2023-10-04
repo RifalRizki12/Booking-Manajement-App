@@ -3,9 +3,9 @@ using FluentValidation;
 
 namespace API.Utilities.Validations.Rooms;
 
-public class UpdateRoomValidator : AbstractValidator<RoomDto>
+public class RoomValidator : AbstractValidator<RoomDto>
 {
-    public UpdateRoomValidator()
+    public RoomValidator()
     {
         RuleFor(r => r.Name)
                 .NotEmpty()

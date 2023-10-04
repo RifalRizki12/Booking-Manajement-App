@@ -7,11 +7,14 @@ namespace API.Utilities.Validations.AccountRoles
     {
         public CreateAccountRoleValidator() 
         {
-            RuleFor(e => e.AccountGuid)
-                .NotEmpty();
 
-            RuleFor(e => e.RoleGuid) 
-                .NotEmpty();
+            // Aturan validasi untuk properti 'AccountGuid' dalam objek AccountRoleDto
+            RuleFor(e => e.AccountGuid)
+                .NotEmpty();  // Properti tidak boleh kosong
+
+            // Aturan validasi untuk properti 'RoleGuid' dalam objek AccountRoleDto
+            RuleFor(e => e.RoleGuid)
+                .NotEmpty();  // Properti tidak boleh kosong
         }
     }
 }

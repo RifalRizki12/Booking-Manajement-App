@@ -31,16 +31,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Mengkonfigurasi layanan untuk pengendalian API (controllers)
 builder.Services.AddControllers()
        .ConfigureApiBehaviorOptions(options =>
        {
-           // Custom validation response
+           // Konfigurasi respons kustom untuk validasi yang gagal
            options.InvalidModelStateResponseFactory = context =>
            {
+               // Mengambil semua pesan kesalahan validasi dari ModelState
                var errors = context.ModelState.Values
                                    .SelectMany(v => v.Errors)
                                    .Select(v => v.ErrorMessage);
 
+               // Mengembalikan respons HTTP 400 Bad Request dengan pesan kesalahan validasi
                return new BadRequestObjectResult(new ResponseValidatorHandler(errors));
            };
        });
