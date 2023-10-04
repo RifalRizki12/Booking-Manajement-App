@@ -67,6 +67,7 @@ namespace API.Controllers
         {
             try
             {
+
                 // Buat instance Employee baru dari DTO yang diberikan
                 Employee toCreate = employeeDto;
 
@@ -79,14 +80,14 @@ namespace API.Controllers
                 // Kembalikan karyawan yang telah dibuat dengan respons 200 OK
                 return Ok(new ResponseOKHandler<EmployeeDto>((EmployeeDto)result));
             }
-            catch (ExceptionHandler ex)
+            catch (Exception ex)
             {
                 // Tangani pengecualian dan kembalikan respons 500 Internal Server Error
                 return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
                 {
                     Code = StatusCodes.Status500InternalServerError,
                     Status = HttpStatusCode.InternalServerError.ToString(),
-                    Message = "Gagal membuat data karyawan",
+                    Message = "Gagal membuat data employee",
                     Error = ex.Message
                 });
             }
@@ -122,7 +123,7 @@ namespace API.Controllers
                 // Kembalikan pesan sukses dengan respons 200 OK
                 return Ok(new ResponseOKHandler<string>("Data Karyawan Telah Diperbarui"));
             }
-            catch (ExceptionHandler ex)
+            catch (Exception ex)
             {
                 // Tangani pengecualian dan kembalikan respons 500 Internal Server Error
                 return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler

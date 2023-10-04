@@ -1,5 +1,6 @@
 ﻿using API.Contracts;  // Mengimpor namespace API.Contracts yang diperlukan.
 using API.Data;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
@@ -40,11 +41,37 @@ namespace API.Repositories
                 _context.SaveChanges();  // Menyimpan perubahan ke dalam database.
                 return entity;  // Mengembalikan entitas yang berhasil ditambahkan.
             }
-            catch
+            catch (DbUpdateException ex)
             {
-                return null;  // Mengembalikan null jika terjadi kesalahan selama penambahan.
+                var innerException = ex.InnerException;
+                if (innerException is SqlException sqlException)
+                {
+                    // Cek apakah ada indeks unik yang dilanggar
+                    if (sqlException.Number == 2601)
+                    {
+                        // Pengecualian ini disebabkan oleh duplikasi data pada indeks unik
+                        // Anda dapat mengekstrak informasi yang relevan dari innerException
+                        // dan memberikan pesan kesalahan yang sesuai
+                        if (sqlException.Message.Contains("IX_tb_m_employees_email"))
+                        {
+                            throw new Exception("Email sudah digunakan.", ex);
+                        }
+                        else if (sqlException.Message.Contains("IX_tb_m_employees_number"))
+                        {
+                            throw new Exception("Number sudah digunakan.", ex);
+                        }
+                        else if (sqlException.Message.Contains("IX_tb_m_employees_nik"))
+                        {
+                            throw new Exception("NIK sudah digunakan.", ex);
+                        }
+                    }
+                }
+
+                // Tangani pengecualian lainnya dan kembalikan null jika terjadi kesalahan selama penambahan.
+                return null;
             }
         }
+
 
         // Memperbarui entitas TEntity yang ada dalam database.
         public bool Update(TEntity entity)

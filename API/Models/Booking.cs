@@ -1,3 +1,4 @@
+using API.Utilities.Enums;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Models;
@@ -10,7 +11,7 @@ public class Booking : BaseEntity
 
     [Column("end_date")] public DateTime EndDate { get; set; }
 
-    [Column("status")] public int Status { get; set; }
+    [Column("status")] public StatusLevel Status { get; set; }
 
     [Column("remarks", TypeName = "nvarchar(max)")]
     public string Remarks { get; set; }

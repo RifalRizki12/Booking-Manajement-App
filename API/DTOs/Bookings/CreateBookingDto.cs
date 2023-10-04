@@ -1,4 +1,5 @@
 ﻿using API.Models;
+using API.Utilities.Enums;
 
 namespace API.DTOs.Bookings
 {
@@ -7,7 +8,7 @@ namespace API.DTOs.Bookings
         // Properti-properti DTO untuk membuat objek Booking
         public DateTime StartDate { get; set; } // Tanggal dan waktu mulai booking
         public DateTime EndDate { get; set; } 
-        public int Status { get; set; } 
+        public StatusLevel Status { get; set; } 
         public string Remarks { get; set; } 
         public Guid RoomGuid { get; set; } // GUID yang merujuk ke ruangan yang dipesan
         public Guid EmployeeGuid { get; set; } // GUID yang merujuk ke karyawan yang melakukan pemesanan

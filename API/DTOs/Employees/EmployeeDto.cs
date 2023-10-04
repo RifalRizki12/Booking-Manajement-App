@@ -1,4 +1,5 @@
 ﻿using API.Models;
+using API.Utilities.Enums;
 
 namespace API.DTOs.Employees
 {
@@ -9,7 +10,7 @@ namespace API.DTOs.Employees
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime BirthDate { get; set; }
-        public int Gender { get; set; }
+        public GenderLevel Gender { get; set; }
         public DateTime HiringDate { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
@@ -39,7 +40,6 @@ namespace API.DTOs.Employees
             return new Employee
             {
                 Guid = dto.Guid,                // Mengonversi GUID dari EmployeeDto ke Employee.
-                Nik = dto.Nik,                  // Mengonversi NIK dari EmployeeDto ke Employee.
                 FirstName = dto.FirstName,      // Mengonversi Nama Depan dari EmployeeDto ke Employee.
                 LastName = dto.LastName,        // Mengonversi Nama Belakang dari EmployeeDto ke Employee.
                 BirthDate = dto.BirthDate,      // Mengonversi Tanggal Lahir dari EmployeeDto ke Employee.
