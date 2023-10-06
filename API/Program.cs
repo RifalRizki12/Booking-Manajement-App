@@ -15,6 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<BookingManagementDbContext>(option => option.UseSqlServer(connectionString));
 
+// Add email service to the container
+builder.Services.AddTransient<IEmailHandler, EmailHandler>(_ => new EmailHandler(
+                                                            builder.Configuration["SmtpService:Host"],
+                                                            int.Parse(builder.Configuration["SmtpService:Port"]),
+                                                            builder.Configuration["SmtpService:FromEmailAddress"]));
+
 // Add repositories to the container.
 // Mendaftarkan AccountRepository sebagai implementasi IAccountRepository.
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
