@@ -20,5 +20,12 @@ namespace API.Repositories
                            .Select(e => e.Nik)
                            .FirstOrDefault();
         }
+
+        /*public Employee GetByEmployeeEmail(string employeeEmail)
+        {
+            // Implementasi metode GetByEmployeeEmail di sini
+            // Menggunakan LINQ untuk mencari karyawan berdasarkan email
+            return _context.Employees.FirstOrDefault(employee => employee.Email == employeeEmail);
+        }*/
     }
 }

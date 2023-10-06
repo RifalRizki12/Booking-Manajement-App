@@ -1,9 +1,15 @@
 ﻿using API.Contracts;
+using API.DTOs.Accounts;
+using API.DTOs.Educations;
 using API.DTOs.Employees;
+using API.DTOs.Univers;
+using API.DTOs.Universites;
 using API.Models;
+using API.Repositories;
 using API.Utilities.Handler;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Transactions;
 
 namespace API.Controllers
 {
@@ -12,10 +18,136 @@ namespace API.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeRepository _employeeRepository;
+        private readonly IEducationRepository _educationRepository;
+        private readonly IUniversityRepository _universityRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public EmployeeController(IEmployeeRepository employeeRepository)
+        public EmployeeController(IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository = null, IAccountRepository accountRepository = null)
         {
             _employeeRepository = employeeRepository;
+            _educationRepository = educationRepository;
+            _universityRepository = universityRepository;
+            _accountRepository = accountRepository;
+        }
+
+        // Metode untuk mendaftarkan pengguna baru
+        [HttpPost("register")]
+        public IActionResult Register([FromBody] RegisterDto request)
+        {
+            // Validasi apakah kata sandi dan konfirmasi kata sandi cocok
+            if (request.Password != request.ConfirmPassword)
+            {
+                return BadRequest(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status400BadRequest,
+                    Status = HttpStatusCode.BadRequest.ToString(),
+                    Message = "Password and ConfirmPassword do not match."
+                });
+            }
+
+            using (var transactionScope = new TransactionScope())
+            {
+                try
+                {
+                    // Cek apakah universitas sudah ada di database berdasarkan code dan name
+                    var existingUniversity = _universityRepository.GetByCodeAndName(request.UniversityCode, request.UniversityName);
+
+                    if (existingUniversity == null)
+                    {
+                        // Universitas belum ada, maka buat baru
+                        University newUniversityEntity = request; // Menggunakan operator konversi implisit
+
+                        // Memanggil metode Create dari _universityRepository dengan objek University baru
+                        var resultUni = _universityRepository.Create(newUniversityEntity);
+
+                        // Menghubungkan universitas yang baru dibuat dengan existingUniversity
+                        existingUniversity = newUniversityEntity;
+                    }
+
+                    // Hash password menggunakan bcrypt
+                    string hashedPassword = HashHandler.HashPassword(request.Password);
+
+                    // Konversi RegisterDto ke Employee entity menggunakan operator konversi implisit
+                    Employee newEmployeeEntity = request;
+                    // Generate NIK
+                    newEmployeeEntity.Nik = GenerateHandler.generateNik(_employeeRepository.GetLastNik());
+
+                    // Simpan Employee dalam repository
+                    var resultEmp = _employeeRepository.Create(newEmployeeEntity);
+
+                    // Hubungkan Employee dengan Education
+                    Education newEducationEntity = request; // Menggunakan operator konversi implisit
+                    newEducationEntity.Guid = resultEmp.Guid;
+                    newEducationEntity.UniversityGuid = existingUniversity.Guid;
+                    var resultEdu = _educationRepository.Create(newEducationEntity);
+
+                    // Buat objek Account dari RegisterDto
+                    Account newAccountEntity = request; // Menggunakan operator konversi implisit
+                    newAccountEntity.Password = hashedPassword;
+                    newAccountEntity.Guid = newEmployeeEntity.Guid;
+
+                    // Simpan Account dalam repository
+                    var resultAcc = _accountRepository.Create(newAccountEntity);
+
+                    // Commit transaksi jika semua operasi berhasil
+                    transactionScope.Complete();
+
+                    return Ok(new ResponseOKHandler<string>("Registration successful."));
+                }
+                catch (Exception ex)
+                {
+                    // Rollback transaksi jika terjadi kesalahan
+                    transactionScope.Dispose();
+
+                    return BadRequest(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status400BadRequest,
+                        Status = HttpStatusCode.BadRequest.ToString(),
+                        Message = "Registration failed. " + ex.Message
+                    });
+                }
+            }
+        }
+
+        // Metode untuk mendapatkan detail karyawan
+        [HttpGet("details")]
+        public IActionResult GetDetails()
+        {
+            var employees = _employeeRepository.GetAll();
+            var educations = _educationRepository.GetAll();
+            var universities = _universityRepository.GetAll();
+
+            if (!(employees.Any() && educations.Any() && universities.Any()))
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data Employee Tidak Ditemukan"
+                });
+            }
+
+            // Melakukan join antara tabel Employee, Education, dan University
+            var employeeDetails = from emp in employees
+                                  join edu in educations on emp.Guid equals edu.Guid
+                                  join uni in universities on edu.UniversityGuid equals uni.Guid
+                                  select new EmployeeDetailDto
+                                  {
+                                      Guid = emp.Guid,
+                                      Nik = emp.Nik,
+                                      FullName = emp.FirstName + emp.LastName,
+                                      BirthDate = emp.BirthDate,
+                                      Gender = emp.Gender.ToString(),
+                                      HiringDate = emp.HiringDate,
+                                      Email = emp.Email,
+                                      PhoneNumber = emp.PhoneNumber,
+                                      Major = edu.Major,
+                                      Degree = edu.Degree,
+                                      Gpa = edu.Gpa,
+                                      UniveristyName = uni.Name
+                                  };
+
+            return Ok(new ResponseOKHandler<IEnumerable<EmployeeDetailDto>>(employeeDetails));
         }
 
         // GET api/employee
