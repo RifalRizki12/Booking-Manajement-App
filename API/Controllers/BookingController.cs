@@ -103,7 +103,79 @@ namespace API.Controllers
             return Ok(new ResponseOKHandler<BookingDetailDto>(bookingDetail));
         }
 
-        // GET api/booking
+        [HttpGet("booking-length")]
+        public IActionResult GetBookingLength()
+        {
+            try
+            {
+                // Mengambil semua data dari tabel Booking dan Room
+                var bookings = _bookingRepository.GetAll();
+                var rooms = _roomRepository.GetAll();
+
+                // Mendefinisikan hari-hari yang tidak dihitung (Sabtu dan Minggu)
+                var nonWorkingDays = new List<DayOfWeek> { DayOfWeek.Saturday, DayOfWeek.Sunday };
+
+                // Membuat daftar objek RoomBookingLengthDto yang akan menyimpan hasil perhitungan
+                var roomBookingLengths = new List<RoomBookingLengthDto>();
+
+                foreach (var room in rooms)
+                {
+                    // Mengambil semua booking untuk ruangan ini
+                    var roomBookings = bookings.Where(bo => bo.RoomGuid == room.Guid);
+
+                    if (roomBookings.Any())
+                    {
+                        // Menghitung durasi total peminjaman (hari kerja) untuk ruangan ini
+                        var totalBookingLengthInHours = 0;
+
+                        foreach (var booking in roomBookings)
+                        {
+                            var startDate = booking.StartDate;
+                            var endDate = booking.EndDate;
+
+                            while (startDate <= endDate)
+                            {
+                                if (!nonWorkingDays.Contains(startDate.DayOfWeek))
+                                {
+                                    totalBookingLengthInHours += 1; // Menambahkan 1 jam setiap hari kerja
+                                }
+                                startDate = startDate.AddHours(1); // Menambahkan 1 jam ke waktu mulai
+                            }
+                        }
+
+                        // Menghitung jumlah hari
+                        var totalBookingLengthInDays = totalBookingLengthInHours / 24;
+
+                        // Menghitung sisa jam
+                        var remainingHours = totalBookingLengthInHours % 24;
+
+                        // Menambahkan hasil perhitungan ke daftar
+                        roomBookingLengths.Add(new RoomBookingLengthDto
+                        {
+                            RoomGuid = room.Guid,
+                            RoomName = room.Name,
+                            BookingLength = $"{totalBookingLengthInDays} Hari {remainingHours} Jam"
+                        });
+                    }
+                }
+
+                // Mengembalikan daftar hasil perhitungan dalam respons OK
+                return Ok(new ResponseOKHandler<IEnumerable<RoomBookingLengthDto>>(roomBookingLengths));
+
+            }
+            catch (ExceptionHandler ex)
+            {
+                // Jika terjadi pengecualian saat mengambil data, akan mengembalikan respons kesalahan dengan pesan pengecualian.
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Failed to calculate booking lengths",
+                    Error = ex.Message
+                });
+            }
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {
