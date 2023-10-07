@@ -22,7 +22,7 @@ namespace API.Utilities.Handler
             var tokenOptions = new JwtSecurityToken(issuer: _configuration["JWTService:Issuer"],
                 audience: _configuration["JWTService:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(5),
+                expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: signingCredentials);
             var encodedToken = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
             return encodedToken;

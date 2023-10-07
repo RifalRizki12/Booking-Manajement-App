@@ -216,8 +216,7 @@ namespace API.Controllers
                     });
                 }
 
-                // Mengembalikan kode status 204 No Content untuk sukses penghapusan tanpa respons.
-                return NoContent();
+                return Ok(new ResponseOKHandler<string>("Data University Is Delete"));
             }
             catch (ExceptionHandler ex)
             {
