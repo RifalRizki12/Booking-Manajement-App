@@ -73,6 +73,68 @@ namespace API.Controllers
 
         }
 
+        // Endpoint untuk mendapatkan ruangan yang sedang tidak digunakan hari ini
+        [HttpGet("available-rooms")]
+        public IActionResult GetAvailableRooms()
+        {
+            try
+            {
+                // Mengambil semua data dari tabel Room
+                var rooms = _roomRepository.GetAll();
+
+                // Mengambil semua data dari tabel Booking
+                var bookings = _bookingRepository.GetAll();
+
+                // Mendapatkan tanggal hari ini
+                DateTime today = DateTime.Now.Date;
+
+                // Mendapatkan daftar RoomGuid yang sedang digunakan pada hari ini
+                var usedRoomGuids = bookings
+                    .Where(bo => bo.StartDate.Date <= today && today <= bo.EndDate.Date)
+                    .Select(bo => bo.RoomGuid)
+                    .Distinct()
+                    .ToList();
+
+                // Memilih ruangan yang tidak ada dalam daftar usedRoomGuids sebagai ruangan yang tersedia
+                var availableRooms = rooms
+                    .Where(ro => !usedRoomGuids.Contains(ro.Guid))
+                    .Select(ro => new RoomDto
+                    {
+                        Guid = ro.Guid,
+                        Name = ro.Name,
+                        Floor = ro.Floor,
+                        Capacity = ro.Capacity
+                    })
+                    .ToList();
+
+                // Jika tidak ada ruangan yang tersedia, kirim respons NotFound
+                if (!availableRooms.Any())
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Tidak ada ruangan yang tersedia hari ini"
+                    });
+                }
+
+                // Mengembalikan daftar ruangan yang tersedia dalam respons OK
+                return Ok(new ResponseOKHandler<IEnumerable<RoomDto>>(availableRooms));
+            }
+            catch (ExceptionHandler ex)
+            {
+                // Jika terjadi pengecualian saat mengambil data, akan mengembalikan respons kesalahan dengan pesan pengecualian.
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "Failed to retrieve available rooms",
+                    Error = ex.Message
+                });
+            }
+        }
+
+
         // GET api/room
         [HttpGet]
         public IActionResult GetAll()
