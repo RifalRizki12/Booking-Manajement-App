@@ -4,6 +4,7 @@ using API.Models;
 using Microsoft.AspNetCore.Mvc;
 using API.Utilities.Handler;
 using System.Net;
+using API.Repositories;
 
 namespace API.Controllers
 {
@@ -11,11 +12,95 @@ namespace API.Controllers
     [Route("api/[controller]")]
     public class BookingController : ControllerBase
     {
+        private readonly IRoomRepository _roomRepository;
         private readonly IBookingRepository _bookingRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
-        public BookingController(IBookingRepository bookingRepository)
+        public BookingController(IBookingRepository bookingRepository, IRoomRepository roomRepository, IEmployeeRepository employeeRepository)
         {
             _bookingRepository = bookingRepository;
+            _roomRepository = roomRepository;
+            _employeeRepository = employeeRepository;
+        }
+
+        [HttpGet("details")]
+        public IActionResult GetAllBookingDetails()
+        {
+            var bookings = _bookingRepository.GetAll();
+            var bookingEmployees = _employeeRepository.GetAll(); // Tabel Employee yang berelasi dengan Booking
+            var rooms = _roomRepository.GetAll();
+
+            var bookingDetails = (from bo in bookings
+                                  join emp in bookingEmployees on bo.EmployeeGuid equals emp.Guid
+                                  join ro in rooms on bo.RoomGuid equals ro.Guid
+                                  select new BookingDetailDto
+                                  {
+                                      Guid = bo.Guid,
+                                      BookedNIK = emp.Nik,
+                                      BookedBy = $"{emp.FirstName} {emp.LastName}",
+                                      RoomName = ro.Name,
+                                      StartDate = bo.StartDate,
+                                      EndDate = bo.EndDate,
+                                      Status = bo.Status,
+                                      Remarks = bo.Remarks
+                                  }).ToList();
+
+            if (!bookingDetails.Any())
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Tidak ada detail booking yang ditemukan"
+                });
+            }
+
+            return Ok(new ResponseOKHandler<IEnumerable<BookingDetailDto>>(bookingDetails));
+        }
+
+        [HttpGet("details/{guid}", Name = "GetBookingByGuid")]
+        public IActionResult GetBookingByGuid(Guid guid)
+        {
+            var booking = _bookingRepository.GetByGuid(guid);
+            var bookingEmployees = _employeeRepository.GetAll(); // Tabel Employee yang berelasi dengan Booking
+            var rooms = _roomRepository.GetAll();
+
+            if (booking == null)
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Booking dengan GUID yang diberikan tidak ditemukan"
+                });
+            }
+
+            var bookingDetail = (from bo in new[] { booking }
+                                 join emp in bookingEmployees on bo.EmployeeGuid equals emp.Guid
+                                 join ro in rooms on bo.RoomGuid equals ro.Guid
+                                 select new BookingDetailDto
+                                 {
+                                     Guid = bo.Guid,
+                                     BookedNIK = emp.Nik,
+                                     BookedBy = $"{emp.FirstName} {emp.LastName}",
+                                     RoomName = ro.Name,
+                                     StartDate = bo.StartDate,
+                                     EndDate = bo.EndDate,
+                                     Status = bo.Status,
+                                     Remarks = bo.Remarks
+                                 }).FirstOrDefault();
+
+            if (bookingDetail == null)
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Detail booking dengan GUID yang diberikan tidak ditemukan"
+                });
+            }
+
+            return Ok(new ResponseOKHandler<BookingDetailDto>(bookingDetail));
         }
 
         // GET api/booking
