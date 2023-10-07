@@ -1,8 +1,11 @@
 ﻿using API.Contracts;
+using API.DTOs.Employees;
 using API.DTOs.Rooms;
 using API.Models;
+using API.Repositories;
 using API.Utilities.Handler;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace API.Controllers
@@ -12,10 +15,62 @@ namespace API.Controllers
     public class RoomController : ControllerBase
     {
         private readonly IRoomRepository _roomRepository;
+        private readonly IBookingRepository _bookingRepository;
+        private readonly IEmployeeRepository _employeeRepository;
 
-        public RoomController(IRoomRepository roomRepository)
+        public RoomController(IRoomRepository roomRepository, IBookingRepository bookingRepository, IEmployeeRepository employeeRepository)
         {
             _roomRepository = roomRepository;
+            _bookingRepository = bookingRepository;
+            _employeeRepository = employeeRepository;
+        }
+
+        // Endpoint untuk mendapatkan ruangan yang sedang digunakan hari ini
+        [HttpGet("today")]
+        public IActionResult GetRoomsInUseToday()
+        {
+            var booking = _bookingRepository.GetAll();
+            var room = _roomRepository.GetAll();
+            var employees = _employeeRepository.GetAll();
+
+            DateTime today = DateTime.Now.Date;
+
+            if (!(booking.Any() && room.Any()))
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data Booking atau Room Tidak Ditemukan"
+                });
+            }
+
+            var roomsInUseToday = (from bo in booking
+                                   join ro in room on bo.RoomGuid equals ro.Guid
+                                   join emp in employees on bo.EmployeeGuid equals emp.Guid // Join dengan tabel Employee
+                                   where bo.StartDate.Date <= today && today <= bo.EndDate.Date
+                                   select new RoomUsageDto
+                                   {
+                                       BookingGuid = bo.Guid,
+                                       Status = bo.Status,
+                                       RoomName = ro.Name,
+                                       Floor = ro.Floor,
+                                       BookedBy = $"{emp.FirstName} {emp.LastName}" // Menggunakan FirstName dan LastName dari tabel Employee
+                                   }).ToList();
+
+
+            if (!roomsInUseToday.Any())
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Tidak ada ruangan yang digunakan hari ini"
+                });
+            }
+
+            return Ok(new ResponseOKHandler<IEnumerable<RoomUsageDto>>(roomsInUseToday));
+
         }
 
         // GET api/room

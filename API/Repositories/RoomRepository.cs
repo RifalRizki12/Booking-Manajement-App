@@ -9,5 +9,12 @@ namespace API.Repositories
         public RoomRepository(BookingManagementDbContext context) : base(context)
         {
         }
+
+        public IEnumerable<Booking> GetRoomsInUse(DateTime date)
+        {
+            return _context.Bookings
+                .Where(b => b.StartDate.Date <= date && date <= b.EndDate.Date)
+                .ToList();
+        }
     }
 }
