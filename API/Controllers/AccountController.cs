@@ -4,6 +4,7 @@ using API.DTOs.Employees;
 using API.Models;
 using API.Repositories;
 using API.Utilities.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Transactions;
@@ -12,6 +13,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class AccountController : ControllerBase
     {
         private readonly IAccountRepository _accountRepository;
@@ -28,6 +30,7 @@ namespace API.Controllers
 
         // Metode untuk mengirim OTP melalui email dalam kasus lupa kata sandi
         [HttpPut("forgot-password")]
+        [AllowAnonymous]
         public IActionResult ForgotPassword(string email)
         {
             var employees = _employeeRepository.GetAll();
@@ -96,6 +99,7 @@ namespace API.Controllers
 
         // Metode untuk mengganti kata sandi
         [HttpPut("change-password")]
+        [AllowAnonymous]
         public IActionResult ChangePassword([FromBody] ChangePasswordDto request)
         {
             var employees = _employeeRepository.GetAll();

@@ -9,5 +9,10 @@ namespace API.Repositories
         public RoleRepository(BookingManagementDbContext context) : base(context)
         {
         }
+
+        public Guid? GetDefaultGuid()
+        {
+            return _context.Set<Role>().FirstOrDefault(r => r.Name == "user")?.Guid;
+        }
     }
 }

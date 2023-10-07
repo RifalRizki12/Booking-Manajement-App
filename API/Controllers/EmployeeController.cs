@@ -7,6 +7,7 @@ using API.DTOs.Universites;
 using API.Models;
 using API.Repositories;
 using API.Utilities.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Transactions;
@@ -15,23 +16,29 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IEducationRepository _educationRepository;
         private readonly IUniversityRepository _universityRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly IAccountRoleRepository _accountRoleRepository;
+        private readonly IRoleRepository _roleRepository;
 
-        public EmployeeController(IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository = null, IAccountRepository accountRepository = null)
+        public EmployeeController(IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository, IAccountRepository accountRepository, IAccountRoleRepository accountRoleRepository, IRoleRepository roleRepository)
         {
             _employeeRepository = employeeRepository;
             _educationRepository = educationRepository;
             _universityRepository = universityRepository;
             _accountRepository = accountRepository;
+            _accountRoleRepository = accountRoleRepository;
+            _roleRepository = roleRepository;
         }
 
         // Metode untuk mendaftarkan pengguna baru
         [HttpPost("register")]
+        [AllowAnonymous]
         public IActionResult Register([FromBody] RegisterDto request)
         {
             // Validasi apakah kata sandi dan konfirmasi kata sandi cocok
@@ -88,6 +95,13 @@ namespace API.Controllers
 
                     // Simpan Account dalam repository
                     var resultAcc = _accountRepository.Create(newAccountEntity);
+
+                    //Generate add role user
+                    var accountRole = _accountRoleRepository.Create(new AccountRole
+                    {
+                        AccountGuid = newEmployeeEntity.Guid,
+                        RoleGuid = _roleRepository.GetDefaultGuid() ?? throw new Exception("Default role not found")
+                    });
 
                     // Commit transaksi jika semua operasi berhasil
                     transactionScope.Complete();
