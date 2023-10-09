@@ -29,12 +29,15 @@ namespace API.Controllers
         [HttpGet("today")]
         public IActionResult GetRoomsInUseToday()
         {
+            // Mengambil daftar booking, ruangan, dan karyawan dari repositori
             var booking = _bookingRepository.GetAll();
             var room = _roomRepository.GetAll();
             var employees = _employeeRepository.GetAll();
 
+            // Mendapatkan tanggal hari ini
             DateTime today = DateTime.Now.Date;
 
+            // Memeriksa apakah ada data booking atau ruangan yang tersedia
             if (!(booking.Any() && room.Any()))
             {
                 return NotFound(new ResponseErrorHandler
@@ -45,6 +48,7 @@ namespace API.Controllers
                 });
             }
 
+            // Melakukan join antara tabel booking, room, dan employees untuk mendapatkan ruangan yang digunakan hari ini
             var roomsInUseToday = (from bo in booking
                                    join ro in room on bo.RoomGuid equals ro.Guid
                                    join emp in employees on bo.EmployeeGuid equals emp.Guid // Join dengan tabel Employee
@@ -58,7 +62,7 @@ namespace API.Controllers
                                        BookedBy = $"{emp.FirstName} {emp.LastName}" // Menggunakan FirstName dan LastName dari tabel Employee
                                    }).ToList();
 
-
+            // Memeriksa apakah ada ruangan yang digunakan hari ini
             if (!roomsInUseToday.Any())
             {
                 return NotFound(new ResponseErrorHandler
@@ -69,8 +73,8 @@ namespace API.Controllers
                 });
             }
 
+            // Mengembalikan daftar ruangan yang digunakan hari ini dalam respons OK
             return Ok(new ResponseOKHandler<IEnumerable<RoomUsageDto>>(roomsInUseToday));
-
         }
 
         // Endpoint untuk mendapatkan ruangan yang sedang tidak digunakan hari ini

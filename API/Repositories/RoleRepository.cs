@@ -10,8 +10,10 @@ namespace API.Repositories
         {
         }
 
+        
         public Guid? GetDefaultGuid()
         {
+            // Mengambil role dengan nama "user" dari database
             return _context.Set<Role>().FirstOrDefault(r => r.Name == "user")?.Guid;
         }
     }

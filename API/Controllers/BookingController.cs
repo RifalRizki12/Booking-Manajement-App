@@ -26,10 +26,12 @@ namespace API.Controllers
         [HttpGet("details")]
         public IActionResult GetAllBookingDetails()
         {
+            // Mengambil daftar booking, karyawan yang berhubungan dengan booking, dan ruangan dari repositori
             var bookings = _bookingRepository.GetAll();
             var bookingEmployees = _employeeRepository.GetAll(); // Tabel Employee yang berelasi dengan Booking
             var rooms = _roomRepository.GetAll();
 
+            // Menggabungkan tabel booking, karyawan, dan ruangan untuk mendapatkan detail booking
             var bookingDetails = (from bo in bookings
                                   join emp in bookingEmployees on bo.EmployeeGuid equals emp.Guid
                                   join ro in rooms on bo.RoomGuid equals ro.Guid
@@ -45,6 +47,7 @@ namespace API.Controllers
                                       Remarks = bo.Remarks
                                   }).ToList();
 
+            // Memeriksa apakah ada detail booking yang ditemukan
             if (!bookingDetails.Any())
             {
                 return NotFound(new ResponseErrorHandler
@@ -55,16 +58,20 @@ namespace API.Controllers
                 });
             }
 
+            // Mengembalikan daftar detail booking dalam respons OK
             return Ok(new ResponseOKHandler<IEnumerable<BookingDetailDto>>(bookingDetails));
         }
+
 
         [HttpGet("details/{guid}", Name = "GetBookingByGuid")]
         public IActionResult GetBookingByGuid(Guid guid)
         {
+            // Mengambil booking berdasarkan GUID yang diberikan
             var booking = _bookingRepository.GetByGuid(guid);
             var bookingEmployees = _employeeRepository.GetAll(); // Tabel Employee yang berelasi dengan Booking
             var rooms = _roomRepository.GetAll();
 
+            // Memeriksa apakah booking dengan GUID yang diberikan ditemukan
             if (booking == null)
             {
                 return NotFound(new ResponseErrorHandler
@@ -75,6 +82,7 @@ namespace API.Controllers
                 });
             }
 
+            // Menggabungkan tabel booking, karyawan, dan ruangan untuk mendapatkan detail booking berdasarkan GUID
             var bookingDetail = (from bo in new[] { booking }
                                  join emp in bookingEmployees on bo.EmployeeGuid equals emp.Guid
                                  join ro in rooms on bo.RoomGuid equals ro.Guid
@@ -90,6 +98,7 @@ namespace API.Controllers
                                      Remarks = bo.Remarks
                                  }).FirstOrDefault();
 
+            // Memeriksa apakah detail booking dengan GUID yang diberikan ditemukan
             if (bookingDetail == null)
             {
                 return NotFound(new ResponseErrorHandler
@@ -100,6 +109,7 @@ namespace API.Controllers
                 });
             }
 
+            // Mengembalikan detail booking dalam respons OK
             return Ok(new ResponseOKHandler<BookingDetailDto>(bookingDetail));
         }
 
