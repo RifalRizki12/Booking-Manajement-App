@@ -1,0 +1,65 @@
+﻿@{
+    ViewBag.Title = "Pokémon List";
+}
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+}
+
+@section styles {
+    <link rel="stylesheet" type="text/css" href="~/css/custom.css" />
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Pokémon List</h2>
+    <div class="row grid-container" id="pokemonGrid">
+        <!-- Pokémon data will be inserted here by jQuery -->
+    </div>
+</div>
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="modalPoke" tabindex="-1" aria-labelledby="modalPokeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-light">
+                <h5 class="modal-title" id="modalPokeLabel">Pokémon Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 text-center">
+                        <div class="pokeImage mb-3">
+                            <img src="" id="modal-pokemon-image" alt="Pokemon" class="img-fluid">
+                        </div>
+                        <div class="pokeType mb-3">
+                            <!-- Tipe Pokemon akan ditampilkan di sini -->
+                        </div>
+                        <div class="pokeAbility mb-3">
+                            <!-- Kemampuan Pokemon akan ditampilkan di sini -->
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="statNameValue">
+                        </div>
+                        <!-- Daftar Pergerakan -->
+                        <div>
+                            <h5>Daftar Pergerakan</h5>
+                            <ul id="modal-pokemon-moves">
+                                <!-- Daftar pergerakan akan ditampilkan di sini -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/test.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,25 @@
+﻿.grid-container {
+    background-color: #f7f7f7;
+    padding: 20px;
+}
+
+.card {
+    background-color: #f3f3f3;
+    border: 2px solid #007bff;
+}
+
+.card-title {
+    text-align: center;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+}
+
+.btn-primary {
+    margin-top: auto;
+}
