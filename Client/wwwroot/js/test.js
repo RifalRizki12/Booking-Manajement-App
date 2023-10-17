@@ -37,7 +37,7 @@ function detail(stringUrl) {
         $(".pokeType").html(pokeType);
 
         const pokeAbility = res.abilities.map((ability) => {
-            return `<h6 class="text-capitalize mt-3">${ability.ability.name}</h6>`;
+            return `<h6 class="text-capitalize mt-3 ">${ability.ability.name}</h6>`;
         }).join("");
         $(".pokeAbility").html(pokeAbility);
 
@@ -85,18 +85,17 @@ function detail(stringUrl) {
             }
 
             return `
-        <div class="row mt-3">
-            <div class="col d-inline font-weight-bold text-left text-capitalize">${stat.stat.name}</div>
-            <div class="col d-inline font-weight-bold text-right">${stat.base_stat}</div>
-        </div>
-        <div class="row progress mb-3 mx-auto">
-            <div class="progress-bar ${barColor}" role="progressbar" style="width: ${stat.base_stat}%" aria-valuenow="${stat.base_stat}" aria-valuemin="0" aria-valuemax="100">
-            </div>
-        </div>
-    `;
+                        <div class="row mt-3">
+                            <div class="col d-inline font-weight-bold text-left text-capitalize">${stat.stat.name}</div>
+                            <div class="col d-inline font-weight-bold text-right">${stat.base_stat}</div>
+                        </div>
+                        <div class="row progress mb-3 mx-auto">
+                            <div class="progress-bar ${barColor}" role="progressbar" style="width: ${stat.base_stat}%" aria-valuenow="${stat.base_stat}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    `;
         }).join("");
         $(".statNameValue").html(statNameValue);
-
 
     }).fail((error) => {
         console.log(error);

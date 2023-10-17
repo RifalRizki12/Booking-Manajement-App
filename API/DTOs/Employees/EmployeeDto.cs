@@ -19,6 +19,7 @@ namespace API.DTOs.Employees
         // Metode ini akan mengonversi EmployeeDto ke Employee secara eksplisit jika diperlukan.
         public static explicit operator EmployeeDto(Employee employee)
         {
+
             return new EmployeeDto
             {
                 Guid = employee.Guid,               // Mengonversi GUID dari Employee ke EmployeeDto.
@@ -40,6 +41,7 @@ namespace API.DTOs.Employees
             return new Employee
             {
                 Guid = dto.Guid,                // Mengonversi GUID dari EmployeeDto ke Employee.
+                Nik= dto.Nik,
                 FirstName = dto.FirstName,      // Mengonversi Nama Depan dari EmployeeDto ke Employee.
                 LastName = dto.LastName,        // Mengonversi Nama Belakang dari EmployeeDto ke Employee.
                 BirthDate = dto.BirthDate,      // Mengonversi Tanggal Lahir dari EmployeeDto ke Employee.

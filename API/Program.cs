@@ -117,7 +117,8 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins();
+        policy.AllowAnyOrigin();
+        //policy.WithOrigins();
         policy.AllowAnyHeader();
         policy.WithMethods("GET", "POST", "DELETE","PUT");
     });

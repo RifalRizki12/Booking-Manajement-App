@@ -1,4 +1,5 @@
 ﻿using API.Contracts;
+using API.Data;
 using API.DTOs.Accounts;
 using API.DTOs.Educations;
 using API.DTOs.Employees;
@@ -9,6 +10,7 @@ using API.Repositories;
 using API.Utilities.Handler;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Transactions;
 
@@ -16,7 +18,7 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -25,8 +27,9 @@ namespace API.Controllers
         private readonly IAccountRepository _accountRepository;
         private readonly IAccountRoleRepository _accountRoleRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly IBookingRepository _bookingRepository;
 
-        public EmployeeController(IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository, IAccountRepository accountRepository, IAccountRoleRepository accountRoleRepository, IRoleRepository roleRepository)
+        public EmployeeController(IEmployeeRepository employeeRepository, IEducationRepository educationRepository, IUniversityRepository universityRepository, IAccountRepository accountRepository, IAccountRoleRepository accountRoleRepository, IRoleRepository roleRepository, IBookingRepository bookingRepository)
         {
             _employeeRepository = employeeRepository;
             _educationRepository = educationRepository;
@@ -34,11 +37,12 @@ namespace API.Controllers
             _accountRepository = accountRepository;
             _accountRoleRepository = accountRoleRepository;
             _roleRepository = roleRepository;
+            _bookingRepository = bookingRepository;
         }
 
         // Metode untuk mendaftarkan pengguna baru
         [HttpPost("register")]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         public IActionResult Register([FromBody] RegisterDto request)
         {
             // Validasi apakah kata sandi dan konfirmasi kata sandi cocok
@@ -125,6 +129,7 @@ namespace API.Controllers
 
         // Metode untuk mendapatkan detail karyawan
         [HttpGet("details")]
+        //[AllowAnonymous]
         public IActionResult GetDetails()
         {
             var employees = _employeeRepository.GetAll();
@@ -262,12 +267,15 @@ namespace API.Controllers
                 // Ubah beberapa properti karyawan dan panggil repositori untuk memperbarui
                 Employee toUpdate = employeeDto;
                 toUpdate.Nik = entity.Nik;
-                toUpdate.CreatedDate = entity.CreatedDate;
+                toUpdate.ModifiedDate = entity.ModifiedDate;
 
-                _employeeRepository.Update(toUpdate);
+                var result = _employeeRepository.Update(toUpdate);
 
                 // Kembalikan pesan sukses dengan respons 200 OK
-                return Ok(new ResponseOKHandler<string>("Data Karyawan Telah Diperbarui"));
+                // Menggunakan ResponseOKHandler untuk memberikan respons sukses
+                var response = new ResponseOKHandler<EmployeeDto>("Data Employee Telah Diperbarui");
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -290,6 +298,9 @@ namespace API.Controllers
             {
                 // Dapatkan entitas karyawan yang akan dihapus berdasarkan GUID
                 var entity = _employeeRepository.GetByGuid(guid);
+                var entity2 = _accountRepository.GetByGuid(guid);
+                var entity3 = _educationRepository.GetByGuid(guid);
+                var entity4 = _bookingRepository.GetByGuid(guid);
 
                 // Periksa jika entitas ada
                 if (entity is null)
@@ -299,6 +310,21 @@ namespace API.Controllers
                         Code = StatusCodes.Status404NotFound,
                         Status = HttpStatusCode.NotFound.ToString(),
                         Message = "Karyawan dengan GUID Tertentu Tidak Ditemukan"
+                    });
+                }
+
+                // Periksa apakah ada referensi ke karyawan di entitas lain
+                bool isReferenced = entity2 != null && entity2.Guid == entity.Guid;
+                bool isReferenced2 = entity3 != null && entity3.Guid == entity.Guid;
+                bool isReferenced3 = entity4 != null && entity4.EmployeeGuid == entity.Guid;
+
+                if (isReferenced || isReferenced2 || isReferenced3)
+                {
+                    return BadRequest(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status400BadRequest,
+                        Status = HttpStatusCode.BadRequest.ToString(),
+                        Message = "Tidak dapat menghapus employee karena masih digunakan oleh entitas lain !",                        
                     });
                 }
 
@@ -320,5 +346,6 @@ namespace API.Controllers
                 });
             }
         }
+
     }
 }

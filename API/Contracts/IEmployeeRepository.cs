@@ -6,5 +6,6 @@ namespace API.Contracts
     {
         string GetLastNik();
         Employee GetByEmployeeEmail(string employeeEmail);
+
     }
 }

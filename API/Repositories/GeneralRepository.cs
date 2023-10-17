@@ -1,5 +1,6 @@
 ﻿using API.Contracts;  // Mengimpor namespace API.Contracts yang diperlukan.
 using API.Data;
+using API.Utilities.Handler;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -56,7 +57,7 @@ namespace API.Repositories
                         {
                             throw new Exception("Email sudah digunakan.", ex);
                         }
-                        else if (sqlException.Message.Contains("IX_tb_m_employees_number"))
+                        else if (sqlException.Message.Contains("IX_tb_m_employees_phone_number"))
                         {
                             throw new Exception("Number sudah digunakan.", ex);
                         }
@@ -82,9 +83,9 @@ namespace API.Repositories
                 _context.SaveChanges();  // Menyimpan perubahan ke dalam database.
                 return true;  // Mengembalikan true jika pembaruan berhasil.
             }
-            catch
+            catch (Exception ex)
             {
-                return false;  // Mengembalikan false jika terjadi kesalahan selama pembaruan.
+                throw new ExceptionHandler(ex.InnerException?.Message ?? ex.Message);
             }
         }
 

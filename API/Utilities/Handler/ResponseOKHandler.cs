@@ -59,5 +59,10 @@ namespace API.Utilities.Handler
             Message = message;
             Data = data;
         }
+
+        public ResponseOKHandler()
+        {
+
+        }
     }
 }

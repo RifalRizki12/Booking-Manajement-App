@@ -1,0 +1,200 @@
+﻿@{
+    ViewBag.Title = "Employee List";
+}
+
+@{
+    Layout = "/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section styles {
+}
+
+<!-- Complex Headers -->
+<div class="card">
+    <h5 class="card-header">Data Employee</h5>
+    <div class="dt-action-buttons text-end pt-3 pt-md-0">
+        <div class="datatable-buttons">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#modalCenter">
+                Create
+            </button>
+            <button id="custom-copy-button" class="btn btn-secondary">Copy</button>
+            <button id="custom-excel-button" class="btn btn-secondary">Excel</button>
+            <button id="custom-pdf-button" class="btn btn-secondary">PDF</button>
+            <button id="custom-print-button" class="btn btn-secondary">Print</button>
+            <button id="custom-visibility" class="btn btn-secondary">Visibility</button>
+        </div>
+    </div>
+    <div class="card-datatable text-nowrap table-responsive">
+        <table id="tableEmployee"
+            class="dt-complex-header table table-bordered dt-responsive table datatables-basic table">
+            <thead>
+                <tr>
+                    <th rowspan="2">No</th>
+                    <th colspan="3" style="text-align: center;">Biodata</th>
+                    <th colspan="2" style="text-align: center;">Information</th>
+                    <th colspan="1" style="text-align: center;">Hiring</th>
+                    <th class="no-export" rowspan="2" style="text-align: center;">Action</th>
+                </tr>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Gender</th>
+                    <th>Birth Date</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Hiring Date</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<!--/ Complex Headers -->
+
+<!-- Modal Create -->
+<div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">Create Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label for="firstNameInput" class="form-label">First Name</label>
+                            <input type="text" id="firstNameInput" class="form-control" placeholder="Enter First Name"
+                                required />
+                        </div>
+                        <div class="col mb-3">
+                            <label for="lastNameInput" class="form-label">Last Name</label>
+                            <input type="text" id="lastNameInput" class="form-control" placeholder="Enter Last Name">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label" for="genderInput">Gender</label>
+                            <select id="genderInput" class="form-select">
+                                <option value="0">Male</option>
+                                <option value="1">Female</option>
+                            </select>
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label" for="birthDateInput">Birth Date</label>
+                            <input type="date" id="birthDateInput" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label for="emailInput" class="form-label">Email</label>
+                            <input type="email" id="emailInput" class="form-control" placeholder="xxxx@xxx.xx"
+                                required />
+                        </div>
+                        <div class="col mb-0">
+                            <label class="form-label" for="phoneNumberInput">Phone Number</label>
+                            <input type="text" id="phoneNumberInput" class="form-control" placeholder="081.xxx.xxx.xx"
+                                required />
+                        </div>
+                        <div class="row">
+                            <div class="col mb-3">
+                                <label class="form-label" for="hiringDateInput">Hiring Date</label>
+                                <input type="datetime-local" id="hiringDateInput" class="form-control" required />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="saveEmployeeButton" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="modalEditEmployee" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCenterTitle">Edit Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editEmployeeForm" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <input type="hidden" id="editEmployeeId" required>
+                            <input type="hidden" id="editNik" required>
+                            <label for="editFirstName" class="form-label">First Name</label>
+                            <input type="text" id="editFirstName" class="form-control" placeholder="Enter First Name"
+                                required />
+                        </div>
+                        <div class="col mb-3">
+                            <label for="lastNameInput" class="form-label">Last Name</label>
+                            <input type="text" id="editLastName" class="form-control" placeholder="Enter Last Name">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label" for="genderInput">Gender</label>
+                            <select id="editGender" class="form-select">
+                                <option value="0">Male</option>
+                                <option value="1">Female</option>
+                            </select>
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label" for="birthDateInput">Birth Date</label>
+                            <input type="datetime-local" id="editBirthDate" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label for="emailInput" class="form-label">Email</label>
+                            <input type="email" id="editEmail" class="form-control" placeholder="xxxx@xxx.xx"
+                                required />
+                        </div>
+                        <div class="col mb-0">
+                            <label class="form-label" for="phoneNumberInput">Phone Number</label>
+                            <input type="text" id="editPhoneNumber" class="form-control" placeholder="081.xxx.xxx.xx"
+                                required />
+                        </div>
+                        <div class="row">
+                            <div class="col mb-3">
+                                <label class="form-label" for="hiringDateInput">Hiring Date</label>
+                                <input type="datetime-local" id="editHiringDate" class="form-control" required />
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" id="editEmployeeButton" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts {
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <!-- DataTables JavaScript -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <!-- DataTables Buttons JavaScript -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+
+
+    <!-- Your DataTable Initialization Script -->
+    <script src="~/js/employee.js" asp-append-version="true"></script>
+}
