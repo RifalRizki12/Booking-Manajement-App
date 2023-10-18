@@ -123,43 +123,49 @@
 
                 <ul class="menu-inner py-1">
                     <!-- Dashboards -->
-                    <li class="menu-item active open">
+                    <li class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Employee" ? "active open" : "")">
                         <a href="javascript:void(0);" class="menu-link menu-toggle">
                             <i class="menu-icon tf-icons ti ti-smart-home"></i>
                             <div data-i18n="Dashboards">Dashboards</div>
                             <div class="badge bg-primary rounded-pill ms-auto">5</div>
                         </a>
                         <ul class="menu-sub">
-                            <li
-                                class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Employee" ? "active open" : "Index")">
+                            <li class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Employee" ? "active open" : "")">
                                 <a href="javascript:void(0);" class="menu-link menu-toggle">
                                     <i class="menu-icon tf-icons ti ti-files"></i>
                                     <div data-i18n="Employee">Employee</div>
                                 </a>
                                 <ul class="menu-sub">
-                                    <li
-                                        class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Employee" ? "active" : "Index")">
+                                    <li class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Employee" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active open" : "")">
                                         <a class="menu-link" asp-area="" asp-controller="Employee" asp-action="Index">
                                             <div data-i18n="Employee List">Data Employee</div>
+                                        </a>
+                                    </li>
+                                    <li class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Employee" && ViewContext.RouteData.Values["Action"].ToString() == "List" ? "active open" : "")">
+                                        <a class="menu-link" asp-area="" asp-controller="Employee" asp-action="List">
+                                            <div data-i18n="Employee HTTP">Data Employee HTTP Client</div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <ul class="menu-sub">
+                            <li class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Role" ? "active open" : "")">
+                                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                                    <i class="menu-icon tf-icons ti ti-files"></i>
+                                    <div data-i18n="Role">Role</div>
+                                </a>
+                                <ul class="menu-sub">
+                                    <li class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Role" && ViewContext.RouteData.Values["Action"].ToString() == "Index" ? "active open" : "")">
+                                        <a class="menu-link" asp-area="" asp-controller="Role" asp-action="Index">
+                                            <div data-i18n="Role List">Data Role</div>
                                         </a>
                                     </li>
                                 </ul>
                             </li>
                         </ul>
                     </li>
-
-                    <!-- Pages Tugas -->
-                    <li class="menu-header small text-uppercase">
-                        <span class="menu-header-text">Tugas &amp; Pages</span>
-                    </li>
-                    <li
-                        class="menu-item @(ViewContext.RouteData.Values["Controller"].ToString() == "Pokemon" ? "active" : "Index")">
-                        <a class="menu-link" asp-area="" asp-controller="Pokemon" asp-action="Index">
-                            <div data-i18n="Pokemon">Pokemon List</div>
-                        </a>
-                    </li>
                 </ul>
-
 
             </aside>
             <!-- / Menu -->

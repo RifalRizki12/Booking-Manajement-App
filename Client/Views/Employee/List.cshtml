@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "List";
+    Layout = "/Views/Shared/_AdminLayout.cshtml";
 }
 
 <h1>List</h1>
@@ -73,7 +74,7 @@
                 @Html.DisplayFor(modelItem => item.PhoneNumber)
             </td>
             <td>
-                    <a asp-action="Edit" asp-route-id="@item.Guid">Edit</a> |
+                    @Html.ActionLink("Edit", "Edit", new { Guid=item.Guid }) |
                     <a asp-action="Details" asp-route-id="@item.Guid">Details</a> |
                     <a asp-action="Delete" asp-route-id="@item.Guid">Delete</a>
                 @* @Html.ActionLink("Edit", "Edit", new { Guid=item.Guid }) |

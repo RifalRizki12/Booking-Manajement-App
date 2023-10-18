@@ -164,7 +164,7 @@
         var hiringDate = $('#hiringDateInput').val(); // Ambil nilai dari input Hiring Date
     
         // Periksa apakah elemen input yang diperlukan sudah diisi
-        if (!firstName || !birthDate || !email || !phoneNumber || !hiringDate) {
+        /*if (!firstName || !birthDate || !email || !phoneNumber || !hiringDate) {
             $('#modalCenter').modal('hide');
             Swal.fire({
                 icon: 'error',
@@ -172,7 +172,7 @@
                 text: 'Harap isi semua field yang diperlukan.'
             });
             return; // Berhenti jika ada field yang kosong
-        }
+        }*/
 
         var newData = {
             firstName: firstName,

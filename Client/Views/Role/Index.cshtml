@@ -1,0 +1,45 @@
+﻿@{
+    ViewBag.Title = "Employee List";
+}
+
+@{
+    Layout = "/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section styles {
+}
+
+<!-- Complex Headers -->
+<div class="card">
+    <h5 class="card-header">Data Role</h5>
+    <div class="dt-action-buttons text-end pt-3 pt-md-0">
+        <div class="datatable-buttons">
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#modalCenter">
+                Create
+            </button>
+            <button id="custom-copy-button" class="btn btn-secondary">Copy</button>
+            <button id="custom-excel-button" class="btn btn-secondary">Excel</button>
+            <button id="custom-pdf-button" class="btn btn-secondary">PDF</button>
+            <button id="custom-print-button" class="btn btn-secondary">Print</button>
+            <button id="custom-visibility" class="btn btn-secondary">Visibility</button>
+        </div>
+    </div>
+    <div class="card-datatable text-nowrap table-responsive">
+        <table id="tableRole"
+               class="dt-complex-header table table-bordered dt-responsive table datatables-basic table">
+            <thead>
+                <tr>
+                    <th>Guid</th>
+                    <th>Name</th>
+                    <th class="no-export" style="text-align: center;">Action</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+<!--/ Complex Headers>
+
+@section scripts{
+    <script src="~/js/role.js" asp-append-version="true"></script>
+}

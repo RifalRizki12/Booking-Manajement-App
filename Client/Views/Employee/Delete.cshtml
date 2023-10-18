@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Delete";
+    Layout = "/Views/Shared/_AdminLayout.cshtml";
 }
 
 <h1>Delete</h1>
@@ -81,6 +82,7 @@
     
     <form action="/Employee/RemoveEmployee" method="POST">
         <input type="hidden" asp-for="Guid" />
+        <button type="submit" class="btn btn-danger waves-effect waves-light">Delete</button>
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="List">Back to List</a>
     </form>

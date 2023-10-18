@@ -42,34 +42,21 @@ namespace API.Repositories
                 _context.SaveChanges();  // Menyimpan perubahan ke dalam database.
                 return entity;  // Mengembalikan entitas yang berhasil ditambahkan.
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
-                var innerException = ex.InnerException;
-                if (innerException is SqlException sqlException)
+                if (ex.InnerException is not null && ex.InnerException.Message.Contains("IX_tb_m_employees_nik"))
                 {
-                    // Cek apakah ada indeks unik yang dilanggar
-                    if (sqlException.Number == 2601)
-                    {
-                        // Pengecualian ini disebabkan oleh duplikasi data pada indeks unik
-                        // Anda dapat mengekstrak informasi yang relevan dari innerException
-                        // dan memberikan pesan kesalahan yang sesuai
-                        if (sqlException.Message.Contains("IX_tb_m_employees_email"))
-                        {
-                            throw new Exception("Email sudah digunakan.", ex);
-                        }
-                        else if (sqlException.Message.Contains("IX_tb_m_employees_phone_number"))
-                        {
-                            throw new Exception("Number sudah digunakan.", ex);
-                        }
-                        else if (sqlException.Message.Contains("IX_tb_m_employees_nik"))
-                        {
-                            throw new Exception("NIK sudah digunakan.", ex);
-                        }
-                    }
+                    throw new ExceptionHandler("NIK already exists");
                 }
-
-                // Tangani pengecualian lainnya dan kembalikan null jika terjadi kesalahan selama penambahan.
-                return null;
+                if (ex.InnerException is not null && ex.InnerException.Message.Contains("IX_tb_m_employees_email"))
+                {
+                    throw new ExceptionHandler("Email already exists");
+                }
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("IX_tb_m_employees_phone_number"))
+                {
+                    throw new ExceptionHandler("Phone number already exists");
+                }
+                throw new ExceptionHandler(ex.InnerException?.Message ?? ex.Message);
             }
         }
 
@@ -85,6 +72,18 @@ namespace API.Repositories
             }
             catch (Exception ex)
             {
+                if (ex.InnerException is not null && ex.InnerException.Message.Contains("IX_tb_m_employees_nik"))
+                {
+                    throw new ExceptionHandler("NIK already exists");
+                }
+                if (ex.InnerException is not null && ex.InnerException.Message.Contains("IX_tb_m_employees_email"))
+                {
+                    throw new ExceptionHandler("Email la bedeh");
+                }
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("IX_tb_m_employees_phone_number"))
+                {
+                    throw new ExceptionHandler("Phone number already exists");
+                }
                 throw new ExceptionHandler(ex.InnerException?.Message ?? ex.Message);
             }
         }
